@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Speedrun Leaderboard</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css" />
+  <style>
+    /* leaderboard accent */
+    .hero.is-leader { background: linear-gradient(90deg,#00c6ff,#0072ff); }
+    .hero .title, .subtitle{ color: white; }
+    .leaderboard .item { display:flex; justify-content:space-between; padding:0.5rem 0; border-bottom:1px solid #eee; }
+  </style>
+</head>
+<body class="has-background-light">
+
+  <section class="hero is-leader">
+    <div class="hero-body">
+      <div class="container">
+        <h1 class="title">Local Leaderboard</h1>
+        <h2 class="subtitle">Save your name and time to the local leaderboard</h2>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="columns">
+        <div class="column is-half">
+          <div class="box">
+            <h3 class="title is-5">Submit your run</h3>
+            <div class="field">
+              <label class="label">Name</label>
+              <div class="control">
+                <input id="playerName" class="input" placeholder="Your name" />
+              </div>
+            </div>
+
+            <div class="field">
+              <label class="label">Time in seconds</label>
+              <div class="control">
+                <input id="timeSec" class="input" type="number" min="0" placeholder="e.g., 42.5" />
+              </div>
+            </div>
+
+            <div class="buttons">
+              <button id="submitRun" class="button is-primary">Submit Run</button>
+              <button id="clearBoard" class="button is-light">Clear Leaderboard</button>
+            </div>
+
+            <p id="boardStatus" class="mt-3"></p>
+          </div>
+        </div>
+
+        <div class="column is-half">
+          <div class="box">
+            <h3 class="title is-5">Top Runs</h3>
+            <div id="leaderboard" class="leaderboard"></div>
+            <p class="is-size-7 mt-3">Leaderboard is stored in localStorage and is visible only on this browser.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    const BOARD_KEY = 'local_leaderboard_v1';
+    const MAX_ENTRIES = 10;
+
+    function loadBoard() {
+      const raw = localStorage.getItem(BOARD_KEY);
+      return raw ? JSON.parse(raw) : [];
+    }
+
+    function saveBoard(arr) {
+      localStorage.setItem(BOARD_KEY, JSON.stringify(arr));
+    }
+
+    function renderBoard() {
+      const container = document.getElementById('leaderboard');
+      const board = loadBoard();
+      if (board.length === 0) {
+        container.innerHTML = '<div class="notification is-warning">No runs yet. Be the first!</div>';
+        return;
+      }
+      container.innerHTML = '';
+      board.forEach((entry, i) => {
+        const div = document.createElement('div');
+        div.className = 'item';
+        div.innerHTML = `<div><strong>${escapeHtml(entry.name)}</strong> <span class="is-size-7 has-text-grey">(${new Date(entry.at).toLocaleString()})</span></div><div>${entry.time}s</div>`;
+        container.appendChild(div);
+      });
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, (m) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+
+    document.getElementById('submitRun').onclick = function() {
+      const name = document.getElementById('playerName').value.trim() || 'Anonymous';
+      const time = parseFloat(document.getElementById('timeSec').value);
+      if (isNaN(time) || time < 0) {
+        document.getElementById('boardStatus').textContent = 'Please enter a valid time.';
+        return;
+      }
+      const board = loadBoard();
+      board.push({ name, time: Number(time.toFixed(2)), at: Date.now() });
+      // sort ascending by time (lower is better)
+      board.sort((a,b) => a.time - b.time);
+      // limit length
+      if (board.length > MAX_ENTRIES) board.length = MAX_ENTRIES;
+      saveBoard(board);
+      document.getElementById('boardStatus').textContent = 'Run saved to local leaderboard!';
+      document.getElementById('playerName').value = '';
+      document.getElementById('timeSec').value = '';
+      renderBoard();
+    };
+
+    document.getElementById('clearBoard').onclick = function() {
+      if (confirm('Clear the local leaderboard?')) {
+        localStorage.removeItem(BOARD_KEY);
+        document.getElementById('boardStatus').textContent = 'Leaderboard cleared.';
+        renderBoard();
+      }
+    };
+
+    document.addEventListener('DOMContentLoaded', renderBoard);
+  </script>
+</body>
+</html>

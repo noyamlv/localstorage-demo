@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Learning localStorage</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Bulma CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+    <style>
+        body.light-theme {
+            background-color: #f5f5f5;
+            color: #363636;
+        }
+
+        body.dark-theme {
+            background-color: #363636;
+            color: #f5f5f5;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Hero section -->
+    <section class="hero is-primary">
+        <div class="hero-body">
+            <p class="title">localStorage Demo</p>
+            <p class="subtitle">Grade 9 Web Development</p>
+        </div>
+    </section>
+
+    <!-- Content -->
+    <section class="section">
+        <div class="container">
+            <h2 class="title is-4">What is localStorage?</h2>
+            <p>
+                <strong>localStorage</strong> is a simple way to store key/value pairs in the browser.
+                Data is saved even after closing the tab or browser, and is scoped to the same website.
+            </p>
+            <br>
+            <h2 class="title is-4">Common Methods</h2>
+            <ul>
+                <li><code>localStorage.setItem(key, value)</code> – Save data</li>
+                <li><code>localStorage.getItem(key)</code> – Retrieve data</li>
+                <li><code>localStorage.removeItem(key)</code> – Delete one item</li>
+                <li><code>localStorage.clear()</code> – Clear all items</li>
+                <li><code>localStorage.key(index)</code> – Get key by index</li>
+            </ul>
+
+            <hr>
+
+            <!-- Demo form -->
+            <h2 class="title is-4">Try it yourself!</h2>
+            <div class="field">
+                <label class="label">Your Name</label>
+                <div class="control">
+                    <input id="name" class="input" type="text" placeholder="Enter your name">
+                </div>
+            </div>
+
+            <div class="field">
+                <label class="label">Theme</label>
+                <div class="control">
+                    <div class="select">
+                        <select id="theme">
+                            <option value="light">Light</option>
+                            <option value="dark">Dark</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="buttons">
+                <button id="save" class="button is-success">Save</button>
+                <button id="clear" class="button is-danger">Clear</button>
+            </div>
+
+            <p id="status" class="has-text-info mt-3"></p>
+        </div>
+    </section>
+
+<script>
+  function applyTheme(theme) {
+    const body = document.body;
+    body.classList.remove('light-theme', 'dark-theme');
+    if (theme === 'dark') {
+      body.classList.add('dark-theme');
+    } else {
+      body.classList.add('light-theme');
+    }
+  }
+
+  // Load saved values on page load
+  document.addEventListener("DOMContentLoaded", function() {
+    const savedName = localStorage.getItem("name");
+    const savedTheme = localStorage.getItem("theme") || "light";
+
+    if (savedName) document.getElementById("name").value = savedName;
+    document.getElementById("theme").value = savedTheme;
+
+    applyTheme(savedTheme);
+
+    if (savedName || savedTheme) {
+      document.getElementById("status").textContent = "Loaded saved data from localStorage!";
+    }
+  });
+
+    // Apply theme immediately when user changes the select
+    document.getElementById("theme").addEventListener("change", function(e) {
+        const themeValue = e.target.value;
+        localStorage.setItem("theme", themeValue);
+        applyTheme(themeValue);
+        document.getElementById("status").textContent = "Theme changed.";
+    });
+
+  // Save button
+  document.getElementById("save").onclick = function() {
+    localStorage.setItem("name", document.getElementById("name").value);
+    const themeValue = document.getElementById("theme").value;
+    localStorage.setItem("theme", themeValue);
+    applyTheme(themeValue);
+    document.getElementById("status").textContent = "Data saved! Reload the page to see persistence.";
+  };
+
+  // Clear button
+  document.getElementById("clear").onclick = function() {
+    localStorage.clear();
+    document.getElementById("name").value = "";
+    document.getElementById("theme").value = "light";
+    applyTheme("light");
+    document.getElementById("status").textContent = "localStorage cleared!";
+  };
+</script>
+
+</body>
+
+</html>

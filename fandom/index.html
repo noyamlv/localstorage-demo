@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Fandom Roulette — Suggestions Demo</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css" />
+  <style>
+    /* playful accent inspired by student site styling */
+    .hero.is-fandom { background: linear-gradient(90deg,#6b5b95,#b8a9c9);  }
+    .hero-body .title, .subtitle{ color: white; }
+    .rating { cursor: pointer; }
+  </style>
+</head>
+<body class="has-background-light">
+
+  <section class="hero is-fandom">
+    <div class="hero-body">
+      <div class="container">
+        <h1 class="title">Fandom Roulette</h1>
+        <h2 class="subtitle">Add a fandom, give it a rating, and see it persist</h2>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="columns is-variable is-6">
+        <div class="column is-two-thirds">
+          <div class="box">
+            <h3 class="title is-5">Suggest a Fandom</h3>
+            <div class="field">
+              <label class="label">Fandom name</label>
+              <div class="control">
+                <input id="fandomInput" class="input" placeholder="e.g., Star Adventures" />
+              </div>
+            </div>
+
+            <div class="field">
+              <label class="label">Rating</label>
+              <div class="control">
+                <div class="select">
+                  <select id="ratingSelect">
+                    <option value="5">5 — Love it</option>
+                    <option value="4">4 — Like</option>
+                    <option value="3">3 — Neutral</option>
+                    <option value="2">2 — Not for me</option>
+                    <option value="1">1 — Hate it</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="buttons">
+              <button id="addBtn" class="button is-primary">Add Suggestion</button>
+              <button id="clearAll" class="button is-light">Clear All</button>
+            </div>
+
+            <p id="status" class="mt-3"></p>
+          </div>
+
+          <div id="listArea"></div>
+        </div>
+
+        <div class="column">
+          <div class="box">
+            <h3 class="title is-5">How this uses localStorage</h3>
+            <ul>
+              <li><strong>Save:</strong> store an array of suggestion objects as JSON</li>
+              <li><strong>Load:</strong> parse JSON and render cards</li>
+              <li><strong>Update:</strong> change rating and re-save</li>
+            </ul>
+            <hr />
+            <p class="is-size-7">Tip: open DevTools → Application → localStorage to inspect the stored data.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    // Key used in localStorage
+    const STORAGE_KEY = 'fandom_suggestions_v1';
+
+    // Utility: read suggestions array from localStorage
+    function loadSuggestions() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : [];
+    }
+
+    // Utility: save suggestions array to localStorage
+    function saveSuggestions(arr) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+    }
+
+    // Render the list of suggestions
+    function renderList() {
+      const listArea = document.getElementById('listArea');
+      const suggestions = loadSuggestions();
+      listArea.innerHTML = '';
+
+      if (suggestions.length === 0) {
+        listArea.innerHTML = '<div class="notification is-warning">No suggestions yet. Add one!</div>';
+        return;
+      }
+
+      suggestions.forEach((s, idx) => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <div class="card-content">
+            <div class="media">
+              <div class="media-content">
+                <p class="title is-5">${escapeHtml(s.name)}</p>
+                <p class="subtitle is-6">Rating: <strong>${s.rating}</strong></p>
+              </div>
+            </div>
+            <div class="content">
+              <div class="field is-grouped">
+                <div class="control">
+                  <div class="select">
+                    <select data-idx="${idx}" class="rating">
+                      <option value="5"${s.rating==5?' selected':''}>5</option>
+                      <option value="4"${s.rating==4?' selected':''}>4</option>
+                      <option value="3"${s.rating==3?' selected':''}>3</option>
+                      <option value="2"${s.rating==2?' selected':''}>2</option>
+                      <option value="1"${s.rating==1?' selected':''}>1</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="control">
+                  <button data-idx="${idx}" class="button is-danger is-light removeBtn">Remove</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+        listArea.appendChild(card);
+      });
+
+      // attach listeners for rating change and remove
+      document.querySelectorAll('.rating').forEach(sel => {
+        sel.addEventListener('change', (e) => {
+          const i = Number(e.target.dataset.idx);
+          const arr = loadSuggestions();
+          arr[i].rating = Number(e.target.value);
+          saveSuggestions(arr);
+          document.getElementById('status').textContent = 'Rating updated.';
+          renderList();
+        });
+      });
+
+      document.querySelectorAll('.removeBtn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const i = Number(e.target.dataset.idx);
+          const arr = loadSuggestions();
+          arr.splice(i, 1);
+          saveSuggestions(arr);
+          document.getElementById('status').textContent = 'Suggestion removed.';
+          renderList();
+        });
+      });
+    }
+
+    // Escape HTML to avoid injection in this demo
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, (m) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+
+    // Add new suggestion
+    document.getElementById('addBtn').addEventListener('click', () => {
+      const name = document.getElementById('fandomInput').value.trim();
+      const rating = Number(document.getElementById('ratingSelect').value);
+      if (!name) {
+        document.getElementById('status').textContent = 'Please enter a fandom name.';
+        return;
+      }
+      const arr = loadSuggestions();
+      arr.push({ name, rating, createdAt: Date.now() });
+      saveSuggestions(arr);
+      document.getElementById('fandomInput').value = '';
+      document.getElementById('status').textContent = 'Suggestion added!';
+      renderList();
+    });
+
+    // Clear all suggestions
+    document.getElementById('clearAll').addEventListener('click', () => {
+      if (confirm('Clear all suggestions?')) {
+        localStorage.removeItem(STORAGE_KEY);
+        document.getElementById('status').textContent = 'All suggestions cleared.';
+        renderList();
+      }
+    });
+
+    // Initial render
+    document.addEventListener('DOMContentLoaded', renderList);
+  </script>
+</body>
+</html>

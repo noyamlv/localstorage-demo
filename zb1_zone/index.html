@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>ZB1 Zone Quiz Saver</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css" />
+  <style>
+    /* subtle dark accent inspired by quiz site */
+    .hero.is-quiz { background: linear-gradient(90deg,#ffb347,#ffcc33); }
+    .result-card { margin-top: 1rem; }
+  </style>
+</head>
+<body class="has-background-white-bis">
+
+  <section class="hero is-quiz">
+    <div class="hero-body">
+      <div class="container">
+        <h1 class="title">ZB1 Zone Quiz</h1>
+        <h2 class="subtitle">Answer the short quiz and save your result locally</h2>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="columns">
+        <div class="column is-two-thirds">
+          <form id="quizForm" class="box">
+            <h3 class="title is-5">Quick Quiz</h3>
+
+            <div class="field">
+              <label class="label">1. HTML stands for?</label>
+              <div class="control">
+                <label class="radio"><input type="radio" name="q1" value="A"> HyperText Markup Language</label><br>
+                <label class="radio"><input type="radio" name="q1" value="B"> Home Tool Markup Language</label><br>
+                <label class="radio"><input type="radio" name="q1" value="C"> Hyperlinks and Text Markup</label>
+              </div>
+            </div>
+
+            <div class="field">
+              <label class="label">2. Which tag is for JavaScript?</label>
+              <div class="control">
+                <label class="radio"><input type="radio" name="q2" value="A"> &lt;script&gt;</label><br>
+                <label class="radio"><input type="radio" name="q2" value="B"> &lt;js&gt;</label><br>
+                <label class="radio"><input type="radio" name="q2" value="C"> &lt;javascript&gt;</label>
+              </div>
+            </div>
+
+            <div class="field">
+              <label class="label">3. CSS is used for?</label>
+              <div class="control">
+                <label class="radio"><input type="radio" name="q3" value="A"> Structure</label><br>
+                <label class="radio"><input type="radio" name="q3" value="B"> Styling</label><br>
+                <label class="radio"><input type="radio" name="q3" value="C"> Data storage</label>
+              </div>
+            </div>
+
+            <div class="field">
+              <label class="label">Your name</label>
+              <div class="control">
+                <input id="studentName" class="input" placeholder="Type your name" />
+              </div>
+            </div>
+
+            <div class="buttons">
+              <button type="button" id="submitQuiz" class="button is-primary">Submit and Save Result</button>
+              <button type="button" id="clearResult" class="button is-light">Clear Saved Result</button>
+            </div>
+
+            <p id="quizStatus" class="mt-3"></p>
+          </form>
+        </div>
+
+        <div class="column">
+          <div id="lastResult" class="box">
+            <h3 class="title is-5">Your last saved result</h3>
+            <div id="resultCard">No saved result yet.</div>
+          </div>
+
+          <div class="box">
+            <h3 class="title is-6">How it works</h3>
+            <p>We save the answers and computed score as a JSON object in localStorage. On page load we show the last saved result so students can see their previous attempt.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    const QUIZ_KEY = 'zb1_quiz_result_v1';
+
+    function computeScore(answers) {
+      // correct answers: q1=A, q2=A, q3=B
+      let score = 0;
+      if (answers.q1 === 'A') score++;
+      if (answers.q2 === 'A') score++;
+      if (answers.q3 === 'B') score++;
+      return score;
+    }
+
+    function readForm() {
+      const form = document.getElementById('quizForm');
+      const answers = {
+        q1: form.q1.value || null,
+        q2: form.q2.value || null,
+        q3: form.q3.value || null,
+        name: document.getElementById('studentName').value.trim()
+      };
+      return answers;
+    }
+
+    function saveResult(obj) {
+      localStorage.setItem(QUIZ_KEY, JSON.stringify(obj));
+    }
+
+    function loadResult() {
+      const raw = localStorage.getItem(QUIZ_KEY);
+      return raw ? JSON.parse(raw) : null;
+    }
+
+    function renderSavedResult() {
+      const container = document.getElementById('resultCard');
+      const saved = loadResult();
+      if (!saved) {
+        container.innerHTML = '<p>No saved result yet.</p>';
+        return;
+      }
+      container.innerHTML = `
+        <div class="content">
+          <p><strong>${escapeHtml(saved.name || 'Anonymous')}</strong></p>
+          <p>Score: <strong>${saved.score} / 3</strong></p>
+          <p>Saved: ${new Date(saved.savedAt).toLocaleString()}</p>
+        </div>
+      `;
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, (m) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+
+    document.getElementById('submitQuiz').addEventListener('click', () => {
+      const answers = readForm();
+      if (!answers.q1 || !answers.q2 || !answers.q3) {
+        document.getElementById('quizStatus').textContent = 'Please answer all questions.';
+        return;
+      }
+      if (!answers.name) {
+        document.getElementById('quizStatus').textContent = 'Please enter your name.';
+        return;
+      }
+      const score = computeScore(answers);
+      const resultObj = { ...answers, score, savedAt: Date.now() };
+      saveResult(resultObj);
+      document.getElementById('quizStatus').textContent = `Saved! You scored ${score} / 3.`;
+      renderSavedResult();
+    });
+
+    document.getElementById('clearResult').addEventListener('click', () => {
+      localStorage.removeItem(QUIZ_KEY);
+      document.getElementById('quizStatus').textContent = 'Saved result cleared.';
+      renderSavedResult();
+    });
+
+    // On load show last saved result
+    document.addEventListener('DOMContentLoaded', renderSavedResult);
+  </script>
+</body>
+</html>
