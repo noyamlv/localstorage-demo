@@ -5,9 +5,16 @@
 
 
 ## Getting started
+
+
+
 **Goal**: Understand what localStorage does and practice saving, loading, and removing data.
 
-**Setup**: Use the provided index.html template. Open it in a browser. Keep DevTools open (Console) to observe behavior.
+**Setup**: Use the provided [index.html](https://github.com/roycan/localstorage-demo/blob/main/index.html) template. Open it in a browser. Keep DevTools open (Console) to observe behavior.
+
+> https://github.com/roycan/localstorage-demo/blob/main/index.html
+
+
 
 > **Tip**: Reload the page after saving to see persistence.
 
@@ -278,3 +285,11 @@ You may search, study, and give short answers in your own words:
 3. Scope: What does “scoped to origin” mean?
 
 
+---
+
+# Demos 
+
+1. https://github.com/roycan/localstorage-demo/tree/main/fandom
+2. https://github.com/roycan/localstorage-demo/tree/main/zb1_zone
+3. https://github.com/roycan/localstorage-demo/tree/main/albee
+   

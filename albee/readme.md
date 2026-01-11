@@ -1,6 +1,6 @@
 # Local Leaderboard Demo (save name + score entries)
 
-> https://github.com/AlBees-0511/CS3_1stQtrPortfolio.git
+> https://github.com/AlBees-0511/CS3_1stQtrPortfolio.git   
 > https://albees-0511.github.io/CS3_1stQtrPortfolio/
 
 **What you'll learn**: storing an array of score entries, sorting, limiting leaderboard length, and persisting across reloads. This mirrors a portfolio/leaderboard idea from the AlBees site.

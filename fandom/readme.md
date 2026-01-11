@@ -1,6 +1,6 @@
 # Fandom Suggestions Demo (suggestions + ratings)
 
-> https://github.com/tay-lor-AI/WDProjStrontiumTancincoYu
+> https://github.com/tay-lor-AI/WDProjStrontiumTancincoYu  
 > https://tay-lor-ai.github.io/WDProjStrontiumTancincoYu/home.html
 
 
