@@ -5,8 +5,8 @@
     <meta charset="UTF-8">
     <title>Learning localStorage</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- Bulma CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+    <!-- Bulma CSS (local) -->
+    <link rel="stylesheet" href="vendor/bulma.min.css">
     <style>
         body.light-theme {
             background-color: #f5f5f5;
@@ -60,6 +60,13 @@
             </div>
 
             <div class="field">
+                <label class="label">Favorite Band/ Singer</label>
+                <div class="control">
+                  <input id="favoriteBand" class="input" type="text" placeholder="e.g., Itchyworms">
+                </div>
+              </div>
+
+            <div class="field">
                 <label class="label">Theme</label>
                 <div class="control">
                     <div class="select">
@@ -80,6 +87,11 @@
         </div>
     </section>
 
+    <div class="box mt-4">
+        <h3 class = "title i-5"> Saved data</h3>
+        <pre id="dump"></pre>
+    </div>
+
 <script>
   function applyTheme(theme) {
     const body = document.body;
@@ -89,11 +101,21 @@
     } else {
       body.classList.add('light-theme');
     }
+  }  
+
+  function renderDump(){
+    const dump = {};
+    for(let i = 0; i < localStorage.length; i++){
+        const key = localStorage.key(i);
+        dump[key] = localStorage.getItem(key);
+    }
+    document.getElementById("dump").textContent = JSON.stringify(dump, null, 2);
   }
 
   // Load saved values on page load
   document.addEventListener("DOMContentLoaded", function() {
     const savedName = localStorage.getItem("name");
+    const savedFavoriteBand = localStorage.getItem("favoriteBand");
     const savedTheme = localStorage.getItem("theme") || "light";
 
     if (savedName) document.getElementById("name").value = savedName;
@@ -114,24 +136,54 @@
         document.getElementById("status").textContent = "Theme changed.";
     });
 
-  // Save button
-  document.getElementById("save").onclick = function() {
-    localStorage.setItem("name", document.getElementById("name").value);
-    const themeValue = document.getElementById("theme").value;
-    localStorage.setItem("theme", themeValue);
-    applyTheme(themeValue);
-    document.getElementById("status").textContent = "Data saved! Reload the page to see persistence.";
+document.addEventListener("DOMContentLoaded", renderDump);
+document.getElementById("save").onclick = () => {
+    document.getElementById("save").onclick = function() {
+        const nameValue = document.getElementById("name").value.trim();
+        if(!nameValue){
+            document.getElementById("status").textContent = "Please enter your name before saving.";
+            return;
+            }
+        localStorage.setItem("name", nameValue);
+        localStorage.setItem("name", document.getElementById("name").value);
+        localStorage.setItem("favoriteBand", document.getElementById("favoriteBand").value);
+        const themeValue = document.getElementById("theme").value;
+        localStorage.setItem("theme", themeValue);
+        applyTheme(themeValue);
+        document.getElementById("status").textContent = "Data saved! Reload the page to see persistence.";
   };
+renderDump();
+}
 
-  // Clear button
-  document.getElementById("clear").onclick = function() {
-    localStorage.clear();
-    document.getElementById("name").value = "";
-    document.getElementById("theme").value = "light";
-    applyTheme("light");
-    document.getElementById("status").textContent = "localStorage cleared!";
-  };
-</script>
+document.getElementById("clear").onclick = () => {
+document.getElementById("clear").onclick = function() {
+  localStorage.removeItem("name");
+  localStorage.removeItem("theme");
+  localStorage.removeItem("favoriteBand");
+  document.getElementById("status").textContent = "Removed specific items from localStorage!";
+  document.getElementById("name").value = "";
+  document.getElementById("theme").value = "light";
+  document.getElementById("favoriteBand").value = "";
+};
+renderDump();
+}
+
+const profile = {
+    name: document.getElementById("name").value,
+    theme: document.getElementById("theme").value,
+    favoriteColor: document.getElementById("favoriteBand").value
+};
+    localStorage.setItem("profile", JSON.stringify(profile));
+
+const savedProfile = localStorage.getItem("profile");
+if(savedProfile){
+    const p = JSON.parse(savedProfile);
+    document.getElementById("name").value = p.name || "";
+    document.getElementById("theme").value = p.theme || "light";
+    document.getElementById("favoriteBand").value = p.favoriteBand || "";
+}
+
+    </script>
 
 </body>
 

@@ -32,9 +32,10 @@ document.getElementById("save").onclick = function() {
 ```
 
 **Question**: localStorage works with key/value pairs. What keys are being saved?
+'name' and 'theme'
 
 **Prediction**: If you type “Alex” and choose “Dark”, what will localStorage.getItem("name") return after reload?
-
+It will return "Alex".
 
 ### Find the load logic:
 
@@ -54,9 +55,10 @@ document.addEventListener("DOMContentLoaded", function() {
 
 
 **Question**: When does this code run?
+It runs immediately after the HTML document has been completely loaded and parsed by the browser.
 
 **Prediction**: What happens if there’s no saved data?
-
+Since localStorage.getItem won't find anything, it returns null, and won't fill in any text, and the "Loaded saved data!" message won't appear because the if statement checks if at least one piece of data exists before showing it.
 
 ---
 
@@ -88,7 +90,7 @@ if (savedFavoriteColor) document.getElementById("favoriteBand").value = savedFav
 ```
 
 **Checkpoint**: Type a Band/ Singer, click Save, reload—does it persist?
-
+Yes
 
 ---
 
@@ -116,6 +118,8 @@ document.getElementById("favoriteBand").value = "";
 
 
 **Checkpoint**: Save data, then click Clear—only the listed keys should be removed. Confirm in DevTools: `localStorage.length`.
+
+Yes, only the 3 keys put in were removed.
 
 
 ---
@@ -202,7 +206,9 @@ document.getElementById("clear").onclick = () => {
 
 **Checkpoint**: Save some data, and see it appear in the dump area.
  Do you see a JSON view of all saved items?
+ Yes
   Clear data and see it update.
+ Yes, it updated to show an empty object.
 
 ---
 
@@ -232,7 +238,11 @@ if (savedProfile) {
 }
 ```
 
-* **Checkpoint**: Confirm localStorage.getItem("profile") is a JSON string. Reload—does the form populate from the object?
+* **Checkpoint**: Confirm localStorage.getItem("profile") is a JSON string. 
+ Yes, it is a JSON string.
+
+Reload—does the form populate from the object?
+ Yes, upon reloading, the form fields are automatically filled with the previously saved data.
 
 
 ---
@@ -252,6 +262,7 @@ localStorage.setItem("name", nameValue);
 ```
 
 * **Checkpoint**: Try saving with an empty name—does the status message guide you?
+Yes
 
 
 ---
@@ -259,6 +270,7 @@ localStorage.setItem("name", nameValue);
 ## Challenge: incognito and quota awareness
 
 * Incognito test: Open the page in incognito/private mode. Save data, close the tab, reopen—does it persist? Discuss why behavior may differ.
+No, because incognito sets you to a completely different profile and therefore will not save your data.
 
 * Quota test (optional): Try saving a very large string (e.g., repeat "x" many times) and catch errors:
 
@@ -279,10 +291,14 @@ try {
 You may search, study, and give short answers in your own words:
 
 1. Definition: What is localStorage used for?
+Storing persistent general information that needs to be availlaboe across browser sessions.
 
 2. Security: Why shouldn’t you store passwords or tokens in localStorage?
+This is due to the fact that localStorage has no built-in protection against things such as hackers who can easily fish your password out due to it being accessible by any Javascript code running on your page.
 
 3. Scope: What does “scoped to origin” mean?
+It means that localStorage data is isolated by the specific protocol, domain, and port of the website. 
+
 
 
 ---
